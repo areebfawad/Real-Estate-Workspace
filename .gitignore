@@ -1,0 +1,7 @@
+node_modules/
+data/*.sqlite*
+data/demo-credentials.txt
+.env
+public/uploads/*
+!public/uploads/.gitkeep
+.DS_Store

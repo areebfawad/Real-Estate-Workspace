@@ -1,0 +1,18 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#bdc8c1"/><stop offset="1" stop-color="#6d8e92"/></linearGradient>
+<linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#c8d5d3"/><stop offset="1" stop-color="#5c7c8b"/></linearGradient>
+</defs>
+<rect width="1200" height="800" fill="#dfddd1"/>
+<rect x="0" y="0" width="1200" height="590" fill="#f5f0e6"/>
+<rect x="115" y="50" width="970" height="540" rx="3" fill="#fdf9f0" stroke="#d4cec3" stroke-width="15"/>
+<rect x="155" y="76" width="890" height="482" fill="url(#g)"/>
+<path d="M155 486 200 480 200 327 236 327 236 404 280 404 280 271 319 271 319 399 375 399 375 337 420 337 420 250 463 250 463 392 507 392 507 305 554 305 554 399 608 399 608 220 647 220 647 401 709 401 709 290 748 290 748 399 783 399 783 243 839 243 839 407 873 407 873 326 928 326 928 410 978 410 978 290 1030 290 1030 486Z" fill="#526873" opacity=".8"/>
+<path d="M155 480 H1045 V558 H155 Z" fill="#739699"/>
+<rect x="590" y="76" width="13" height="482" fill="#f2ede4"/><rect x="155" y="489" width="890" height="8" fill="#f2ede4"/>
+<rect y="590" width="1200" height="210" fill="#e3d4c1"/><path d="M0 700H1200" stroke="#c2ad94" stroke-width="3"/>
+<rect x="140" y="536" width="470" height="148" rx="22" fill="#a89a85"/><rect x="155" y="514" width="447" height="62" rx="21" fill="#b7a996"/><rect x="163" y="635" width="448" height="22" rx="6" fill="#918371"/>
+<rect x="675" y="613" width="300" height="24" rx="12" fill="#7b6558"/><rect x="706" y="638" width="14" height="57" fill="#645349"/><rect x="928" y="638" width="14" height="57" fill="#645349"/>
+<ellipse cx="820" cy="609" rx="65" ry="7" fill="#ccb9a4"/><path d="M820 578c-29-19-9-36-1-52 15 20 37 36 1 52Z" fill="#597d72"/>
+<text x="1128" y="754" text-anchor="end" fill="#91785f" font-size="15" font-family="serif" letter-spacing="4">MARINA GATE</text>
+</svg>

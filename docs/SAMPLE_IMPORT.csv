@@ -1,0 +1,4 @@
+ref,title,purpose,area,type,bedrooms,bathrooms,size_sqft,price_aed,furnished,description,agent_id
+MGP-1001,Marina View 2 Bedroom Apartment,buy,Dubai Marina,Apartment,2,3,1420,2250000,yes,An illustrative newly imported property,2
+MGP-1002,Beachfront 1 Bedroom Apartment,rent,JBR,Apartment,1,2,945,155000,no,An illustrative rental listing,3
+MGP-1003,Business Bay Skyline Penthouse,buy,Business Bay,Penthouse,4,5,3200,7850000,yes,An illustrative premium residence,4
