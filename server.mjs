@@ -12,7 +12,7 @@ if(fs.existsSync(envPath)) for(const line of fs.readFileSync(envPath,'utf8').spl
   if(match && process.env[match[1]]===undefined) process.env[match[1]]=match[2].trim().replace(/^['"]|['"]$/g,'');
 }
 seedIfEmpty();
-const port=Number(process.env.PORT)||3000, host=process.env.HOST||'127.0.0.1';
+const port=Number(process.env.PORT)||3001, host=process.env.HOST||'127.0.0.1';
 const production=process.env.NODE_ENV==='production';
 const cookieSecure=production||process.env.COOKIE_SECURE==='1';
 const staticRoot=path.join(ROOT,'public');
@@ -20,11 +20,13 @@ const htmlTemplate=fs.readFileSync(path.join(staticRoot,'index.html'),'utf8');
 const buckets=new Map();
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webmanifest':'application/manifest+json'};
 const T={};
+mime['.ttf']='font/ttf';
+mime['.woff2']='font/woff2';
 function json(res,data,status=200,headers={}) {send(res,status,JSON.stringify(data),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});}
 function send(res,status,data,headers={}) { res.writeHead(status,headers);res.end(data); }
 function error(status,message,code='INVALID_REQUEST') { const e=new Error(message);e.status=status;e.code=code;throw e; }
 function secureHeaders(res,req) {
-  const policy=["default-src 'self'", "base-uri 'self'", "object-src 'none'", `frame-ancestors ${req.url?.startsWith('/assets/map-explorer.html')?"'self'":"'none'"}`, "form-action 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "font-src 'self'", "connect-src 'self'", "img-src 'self' https://images.unsplash.com data: blob:", "frame-src 'self' https://www.google.com https://maps.google.com", "upgrade-insecure-requests"].filter(x=>!(x==='upgrade-insecure-requests'&&!production)).join('; ');
+  const policy=["default-src 'self'", "base-uri 'self'", "object-src 'none'", `frame-ancestors ${req.url?.startsWith('/assets/map-explorer.html')?"'self'":"'none'"}`, "form-action 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "font-src 'self'", "connect-src 'self'", "img-src 'self' https://images.unsplash.com https://tile.openstreetmap.org data: blob:", "frame-src 'self' https://www.google.com https://maps.google.com", "upgrade-insecure-requests"].filter(x=>!(x==='upgrade-insecure-requests'&&!production)).join('; ');
   res.setHeader('Content-Security-Policy',policy);
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('X-Content-Type-Options','nosniff');
@@ -150,7 +152,8 @@ function seoHtml(pathname){
   const origin=process.env.APP_BASE_URL?.startsWith('https://')?process.env.APP_BASE_URL:'http://localhost:'+port;
   const canonical=escapeHtml(origin+pathname);
   const meta=`<title>${escapeHtml(title)}</title><meta name="description" content="${escapeHtml(desc)}"><link rel="canonical" href="${canonical}"><meta property="og:type" content="${prop?'product':'website'}"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(desc)}"><meta property="og:url" content="${canonical}">${prop?`<meta property="og:image" content="${escapeHtml(prop.photos[0]||'')}">`:''}`;
-  return htmlTemplate.replace('<!-- SEO_META -->',meta);
+  const template=production?htmlTemplate:fs.readFileSync(path.join(staticRoot,'index.html'),'utf8');
+  return template.replace('<!-- SEO_META -->',meta);
 }
 function sitemap(){const base=(process.env.APP_BASE_URL||`http://localhost:${port}`).replace(/\/$/,'');const all=['/','/properties','/map','/communities','/about'];for(const p of db.prepare("SELECT purpose,area,slug,updated_at FROM properties WHERE status='active'").all())all.push(`/${p.purpose}/${slugify(p.area)}/${p.slug}`);return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${all.map(p=>`<url><loc>${escapeHtml(base+p)}</loc></url>`).join('')}</urlset>`;}
 
@@ -389,7 +392,8 @@ const server=http.createServer(async(req,res)=>{
       if(!p.startsWith(staticRoot+path.sep))error(403,'Invalid path.');
       if(!fs.existsSync(p)||!fs.statSync(p).isFile())error(404,'Asset not found.');
       const ext=path.extname(p).toLowerCase();if(!mime[ext])error(415,'Unsupported asset.');
-      res.writeHead(200,{'Content-Type':mime[ext],'Cache-Control':'public, max-age=86400','X-Content-Type-Options':'nosniff'});return fs.createReadStream(p).pipe(res);
+      const cacheControl=['.css','.js','.html'].includes(ext)?'no-cache':'public, max-age=86400';
+      res.writeHead(200,{'Content-Type':mime[ext],'Cache-Control':cacheControl,'X-Content-Type-Options':'nosniff'});return fs.createReadStream(p).pipe(res);
     }
     if(u.pathname==='/manifest.webmanifest'){
       return json(res,{name:'Marina Gate Properties',short_name:'Marina Gate',start_url:'/',display:'standalone',theme_color:'#192b2a',background_color:'#f8f7f4'});
@@ -420,3 +424,4 @@ if(process.env.RESEND_API_KEY&&process.env.RESEND_FROM_EMAIL){
   timer.unref();
 }
 server.listen(port,host,()=>console.log(`\nMARINA GATE PROPERTY DEMO — http://${host}:${port}\nCredentials: ${path.join(DATA,'demo-credentials.txt')}\nEmail: ${process.env.RESEND_API_KEY&&process.env.RESEND_FROM_EMAIL?'provider configured':'DEMO MODE (not sent)'}\n`));
+

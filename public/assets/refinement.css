@@ -1,0 +1,250 @@
+@import url('/assets/fonts.css');
+
+:root {
+  --sans: 'DM Sans', sans-serif;
+  --serif: 'DM Sans', sans-serif;
+  --paper: #e6e9ec;
+  --cream: #dfe4e8;
+  --ink: #0c2a46;
+  --deep: #011826;
+  --deep2: #0c2a46;
+  --muted: #526278;
+  --gold: #a67a53;
+  --gold-dark: #795332;
+  --line: #c8d1da;
+  --raised: 9px 9px 22px #b9c4cf99, -7px -7px 20px #f8fafbcc;
+  --inset: inset 4px 4px 9px #b9c4cf99, inset -4px -4px 9px #f8fafbcc;
+}
+::selection { background: #d8e3d8; color: #253d36; }
+body { scrollbar-color: #bac6bc var(--paper); }
+.container { max-width: 1440px; padding-inline: 48px; }
+.site-header { height: 88px; }
+.header-solid { background: var(--paper); }
+.desktop-nav { gap: 28px; }
+.desktop-nav a, .header-contact, .portal-nav { font-size: 13px; letter-spacing: 0; }
+.brand-word b { letter-spacing: .12em; }
+.landing-intro h1, .home-discovery-heading h2, .display-title { font-weight: 500 !important; }
+.landing-intro { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-block: 34px 28px; }
+.landing-intro h1 { font: 400 clamp(36px,3.5vw,54px)/1.08 var(--serif); letter-spacing: -.025em; margin: 0 0 12px; text-wrap: balance; }
+.landing-intro h1 em { color: #697a64; }
+.landing-intro p { color: var(--muted); font-size: 14px; margin: 0; }
+.landing-browse { display: inline-flex; align-items: center; gap: 16px; min-height: 44px; font-size: 13px; white-space: nowrap; border-bottom: 1px solid #a8b3a5; }
+.landing-map { width: calc(100% - 96px); max-width: 1344px; height: clamp(490px,68svh,690px); min-height: 0; margin: 0 auto 54px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #e7ebe2; }
+.landing-map-footer { padding: 10px 22px; gap: 24px; background: #fdfcf9; color: #536259; min-height: 48px; }
+.landing-map-footer p { font-size: 11px; }
+.landing-map-footer a { font-size: 12px; min-height: 28px; }
+.home-discovery { padding-block: 64px; background: #eeeee7; }
+.home-discovery-heading { margin-bottom: 32px; }
+.home-discovery-heading h2 { font: 400 clamp(36px,4vw,52px)/1.08 var(--serif); margin: 0; letter-spacing: -.02em; }
+.home-discovery-heading h2 em { color: #697a64; }
+.home-discovery-heading p { font-size: 15px; line-height: 1.8; }
+.home-discovery .search-panel { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.home-map-first .eyebrow { display: none; }
+.home-map-first .display-title { margin-top: 0; letter-spacing: -.02em; }
+.home-map-first .section-sub { font-size: 15px; color: var(--muted); }
+.home-map-first .intro-band { padding-block: 72px; }
+.home-map-first .section, .home-map-first .communities-section { padding-block: 80px; }
+.home-map-first .property-grid { gap: 28px; }
+.home-map-first .property-card { border-radius: 12px; overflow: hidden; box-shadow: none; border: 1px solid var(--line); }
+.home-map-first .card-body { padding: 24px; }
+.home-map-first .card-title { font-size: 27px; line-height: 1.15; }
+.home-map-first .card-area { font-size: 11px; color: #5e6d65; }
+.home-map-first .card-price { font-size: 20px; }
+.home-map-first .community-card { border-radius: 12px; }
+.home-map-first .property-card:hover { transform: none; border-color: #9aa997; box-shadow: none; }
+.btn-primary, .search-submit, .landing-browse { transition: background .18s ease, transform .16s ease; }
+.btn-primary:active, .search-submit:active { transform: scale(.98); }
+@media(max-width:1100px) {
+  .container { padding-inline: 28px; }
+  .landing-map { width: calc(100% - 56px); }
+  .desktop-nav { gap: 18px; }
+  .header-contact { display: none; }
+}
+@media(max-width:680px) {
+  .container { padding-inline: 20px; }
+  .site-header { height: 76px; }
+  .landing-intro { padding-block: 26px 22px; display: block; }
+  .landing-intro h1 { font-size: 38px; max-width: 340px; }
+  .landing-intro p { font-size: 13px; max-width: 310px; line-height: 1.6; }
+  .landing-browse { display: none; }
+  .landing-map { width: calc(100% - 32px); height: 560px; margin-bottom: 32px; border-radius: 12px; }
+  .landing-map-footer { padding: 10px 14px; gap: 2px 16px; }
+  .landing-map-footer p { font-size: 10px; }
+  .landing-map-footer a { min-height: 36px; font-size: 11px; }
+  .home-discovery, .home-map-first .intro-band, .home-map-first .section, .home-map-first .communities-section { padding-block: 48px; }
+  .home-map-first .property-grid { gap: 24px; }
+  .home-map-first .card-body { padding: 20px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html { scroll-behavior: auto; }
+  .btn-primary, .search-submit, .landing-browse { transition: none; }
+  .btn-primary:active, .search-submit:active { transform: none; }
+}
+
+/* Navy and bronze, with soft raised surfaces from the supplied reference. */
+::selection { background: #a67a53; color: #f2f2f2; }
+body { background: var(--paper); scrollbar-color: #a67a53 var(--cream); }
+.header-solid { border-bottom-color: #c8d1da; }
+.brand-mark { border-radius: 14px; border: 0; background: var(--paper); box-shadow: var(--raised); }
+.brand-mark:after { display: none; }
+.portal-nav { border: 0; border-radius: 18px; background: var(--paper); box-shadow: var(--raised); }
+.landing-intro h1 em, .home-discovery-heading h2 em { color: var(--gold-dark); }
+.landing-intro { padding-bottom: 36px; }
+.landing-browse { padding: 0 22px; border: 0; border-radius: 22px; background: var(--paper); box-shadow: var(--raised); }
+.landing-map { border: 0; border-radius: 30px; background: var(--paper); box-shadow: var(--raised); }
+.landing-map-footer { background: var(--paper); color: var(--muted); border-color: var(--line); }
+.home-discovery, .intro-band, .featured-section, .communities-section, .closing-section { background: var(--paper); }
+.home-discovery-heading p, .home-map-first .section-sub, .home-map-first .card-area { color: var(--muted); }
+.home-discovery .search-panel { border: 0; border-radius: 26px; background: var(--paper); box-shadow: var(--raised); }
+.search-tabs { background: var(--cream); border-radius: 22px 22px 0 0; }
+.search-fields input, .search-fields select { background-color: transparent; color: var(--ink); }
+.search-tabs label:has(input:checked) span { color: var(--ink); }
+.search-submit, .btn-primary { background: var(--ink); color: #f2f2f2; border-radius: 18px; }
+.search-submit:hover, .btn-primary:hover { background: var(--deep); }
+.home-map-first .property-card { border: 0; border-radius: 26px; background: var(--paper); box-shadow: var(--raised); }
+.home-map-first .property-card:hover { box-shadow: 7px 7px 16px #b9c4cfaa, -5px -5px 16px #f8fafbcc; }
+.home-map-first .card-body { background: var(--paper); }
+.home-map-first .card-price { color: var(--ink); }
+.home-map-first .community-card { border-radius: 28px; }
+.property-tag, .tag-rent { background: var(--ink); color: #f2f2f2; border-radius: 16px; }
+.featured-label { background: #a67a53; color: #011826; border-radius: 16px; }
+.home-map-first .advisory-section, .site-footer { background: var(--deep); }
+.advisory-art { filter: grayscale(1); }
+.site-header a:focus-visible, a:focus-visible, button:focus-visible { outline-color: #795332; }
+.landing-browse:active, .portal-nav:active { box-shadow: var(--inset); }
+.map-page { background: var(--paper); }
+.map-page-heading p:not(.eyebrow), .map-feature-notice { color: var(--muted); }
+.map-page-frame { background: var(--paper); border-color: var(--line); box-shadow: var(--raised); }
+.map-detail-cta { background: var(--paper); color: var(--ink); border: 0; border-radius: 18px; box-shadow: var(--raised); }
+.map-detail-cta:hover { background: var(--cream); }
+.intro-stats b { display: flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+.intro-stats b .number-slot { display: inline-block; height: 1em; overflow: hidden; font-size: inherit; color: inherit; line-height: 1; }
+.intro-stats b .number-reel { display: flex; flex-direction: column; font-size: inherit; color: inherit; line-height: 1; }
+.intro-stats b .number-reel>span { display: block; height: 1em; flex: none; font-size: inherit; color: inherit; line-height: 1; }
+
+/* Raised property cards and a continuous neighbourhood strip. */
+.home-map-first .featured-section .property-card {
+  transition: transform 220ms cubic-bezier(.23,1,.32,1), box-shadow 220ms ease;
+}
+@media(hover:hover) and (pointer:fine) {
+  .home-map-first .featured-section .property-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 22px 36px #0c2a4626, -5px -5px 16px #f8fafbcc;
+  }
+}
+.home-map-first .featured-section .property-card:focus-within {
+  box-shadow: 0 18px 32px #0c2a4626;
+}
+.community-marquee { overflow: hidden; padding-block: 12px 24px; }
+.community-track { display: flex; width: max-content; animation: community-drift 36s linear infinite; }
+.home-map-first .community-track .communities-grid { display: flex; flex: none; gap: 24px; padding-right: 24px; }
+.home-map-first .community-track .community-card { flex: none; width: clamp(290px,30vw,430px); margin: 0; }
+.community-marquee:hover .community-track, .community-marquee:focus-within .community-track,
+.community-marquee.is-paused .community-track { animation-play-state: paused; }
+.community-pause { display: block; margin: 0 0 12px auto; border: 0; border-radius: 18px; background: var(--paper); color: var(--ink); box-shadow: var(--raised); padding: 12px 18px; font: 500 12px var(--sans); }
+@keyframes community-drift { to { transform: translateX(-50%); } }
+@media(prefers-reduced-motion:reduce) {
+  .home-map-first .featured-section .property-card { transition: none; }
+  .home-map-first .featured-section .property-card:hover { transform: none; }
+  .community-track { animation: none; width: auto; }
+  .community-duplicate, .community-pause { display: none !important; }
+  .community-marquee { overflow-x: auto; }
+}
+
+/* Public pages share the same typography, surfaces and form controls. */
+.header-search { position: relative; margin-right: auto; }
+.header-search summary { display: flex; align-items: center; gap: 9px; cursor: pointer; list-style: none; padding: 13px 18px; border-radius: 20px; box-shadow: var(--inset); font-size: 12px; white-space: nowrap; }
+.header-search summary::-webkit-details-marker { display: none; }
+.header-search-panel { position: absolute; top: calc(100% + 18px); left: 0; width: min(850px,calc(100vw - 80px)); background: var(--paper); border-radius: 24px; box-shadow: 0 14px 40px #01182630; padding: 22px; z-index: 40; }
+.header-search .search-panel { margin: 0; box-shadow: none; background: transparent; display: flex; flex-direction: column; }
+.header-search .search-tabs { display: flex; flex-direction: row; border: 0; width: auto; margin-bottom: 16px; }
+.header-search .search-tabs span { padding: 12px 18px; border-radius: 16px; }
+.header-search .search-tabs input:checked+span { background: var(--ink); color: #f2f2f2; }
+.header-search .search-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.header-search .search-fields>label { padding: 12px; border: 0; }
+.header-search .search-submit { grid-column: 1/-1; min-height: 48px; }
+.header-contact { display: none; }
+.landing-map { height: clamp(650px,78svh,850px); }
+.desktop-nav { gap: 18px; }
+@media(max-width:1100px) { .header-search { margin-left: auto; } .header-search-panel { left: auto; right: 0; width: min(700px,calc(100vw - 40px)); } }
+@media(max-width:680px) {
+  .header-search summary { font-size: 0; padding: 12px; }
+  .header-search summary svg { width: 20px; height: 20px; }
+  .header-search-panel { position: fixed; top: 80px; left: 16px; right: 16px; width: auto; max-height: calc(100svh - 100px); overflow-y: auto; padding: 16px; }
+  .landing-map { height: 670px; }
+}
+#main-content .eyebrow, .agent-kicker, .agent-card-copy, .agent-below { display: none; }
+#main-content h1, #main-content h2, #main-content h3, .login-box h1,
+.success-modal h2, .modal-head h2 { font-family: var(--sans); font-weight: 500; letter-spacing: -.025em; }
+#main-content h2 { line-height: 1.2; }
+#main-content h2 em, #main-content h1 em { font-style: normal; color: var(--gold-dark); }
+.inner-hero, .about-values, .guide-info, .login-page, .login-panel { background: var(--paper); }
+.inner-hero:after { display: none; }
+.inner-hero { padding-block: 64px; }
+.inner-hero h1 { font-size: clamp(34px,4vw,54px); }
+.inner-hero p, .about-text p, .muted-large, .detail-description, .map-note,
+.agent-identity p, .inquiry-form small, .login-box>p:not(.eyebrow), .section-sub { color: var(--muted); }
+.detail-description { font-size: 16px; line-height: 1.85; max-width: 70ch; }
+.detail-section h2 { font-size: 28px; margin: 0 0 24px; }
+.detail-head h1 { font-size: clamp(28px,3.2vw,44px); line-height: 1.2; }
+.detail-heading-price strong, .detail-spec-strip b, .card-price { font-family: var(--sans); font-weight: 600; color: var(--ink); }
+.agent-card, .filter-sidebar, .contact-infos, .login-box, .guide-card,
+.property-card, .values-grid>div { background: var(--paper); border: 0; border-radius: 26px; box-shadow: var(--raised); }
+.agent-card { padding: 28px; }
+.agent-identity { margin: 0 0 24px; }
+.agent-avatar { background: var(--ink); color: #f2f2f2; border-radius: 50%; }
+.agent-identity h3 { font-size: 20px; }
+.agent-card h4 { font-size: 17px; letter-spacing: 0; text-transform: none; margin-bottom: 24px; }
+.agent-divider { background: var(--line); margin-block: 28px; }
+.inquiry-form { gap: 20px; }
+.inquiry-form label, .filter-fields label>span, .login-box label { font-size: 13px; color: var(--ink); font-weight: 500; letter-spacing: 0; }
+.inquiry-form input, .inquiry-form textarea, .filter-fields input, .filter-fields select,
+.login-box input, .catalog-toolbar select, .modal-body input:not([type=checkbox]), .modal-body textarea {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 16px;
+  box-shadow: var(--inset); padding: 14px 16px; font: 400 14px/1.5 var(--sans); min-height: 48px;
+}
+.inquiry-form textarea { min-height: 110px; resize: vertical; }
+.inquiry-form input::placeholder, .inquiry-form textarea::placeholder, .filter-fields input::placeholder, .login-box input::placeholder { color: #5c6d80; opacity: 1; }
+.inquiry-form input:focus-visible, .inquiry-form textarea:focus-visible, .filter-fields input:focus-visible,
+.filter-fields select:focus-visible, .login-box input:focus-visible { outline: 2px solid var(--gold-dark); outline-offset: 3px; }
+.agent-actions { gap: 12px; }
+.btn-whatsapp, .btn-call { border: 0; border-radius: 16px; padding: 14px 10px; font: 500 12px var(--sans); min-height: 46px; }
+.btn-whatsapp { background: var(--ink); color: #f2f2f2; }
+.btn-whatsapp:hover { background: var(--deep); }
+.btn-call { background: var(--paper); color: var(--ink); box-shadow: var(--raised); }
+.inquiry-form small { font-size: 11px; line-height: 1.6; }
+.filter-sidebar { padding: 24px; }
+.filter-fields { gap: 20px; }
+.filter-fields label>span { text-transform: none; }
+.property-card { overflow: hidden; }
+.property-card:hover { transform: none; box-shadow: var(--raised); }
+.card-body { background: var(--paper); padding: 24px; }
+.card-title { font-family: var(--sans); font-size: 21px; font-weight: 500; line-height: 1.35; }
+.card-area, .card-specs { color: var(--muted); }
+.detail-gallery, .map-wrap, .guide-card { border-radius: 24px; overflow: hidden; }
+.detail-spec-strip>div { border-color: var(--line); }
+.detail-spec-strip span { color: var(--muted); font-size: 11px; }
+.amenities-grid span { color: var(--ink); font-size: 14px; }
+.contact-infos { padding: 32px; }
+.contact-infos>div { background: transparent; border-color: var(--line); }
+.contact-infos p { color: var(--muted); }
+.values-grid>div { padding: 28px; }
+.values-grid>div>span { display: none; }
+.login-box { padding: 32px; }
+.login-box h1 { font-size: 36px; }
+.demo-login-note { background: var(--cream); color: var(--muted); border-radius: 16px; }
+.demo-login-note code { background: var(--paper); }
+.login-visual { background: var(--deep); }
+.login-dark { background: linear-gradient(0deg,#011826ed,#0c2a4670); }
+.mobile-nav { background: var(--paper); color: var(--ink); top: 88px; }
+@media(max-width:680px) {
+  .agent-card, .filter-sidebar, .contact-infos, .login-box { padding: 24px; border-radius: 22px; }
+  .detail-description { font-size: 15px; }
+  .inner-hero { padding-block: 40px; }
+  .mobile-nav { top: 76px; }
+  .inquiry-form input, .inquiry-form textarea, .filter-fields input, .filter-fields select, .login-box input { font-size: 16px; }
+}
+@media(max-width:680px) {
+  .landing-intro { padding-bottom: 28px; }
+  .landing-map { border-radius: 24px; }
+}

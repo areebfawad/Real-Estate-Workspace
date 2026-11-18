@@ -17,18 +17,36 @@
       // Listings are read from the agency database. Plot coordinates below are
       // DETERMINISTIC ILLUSTRATIONS, NOT real GPS or title/parcel boundaries.
       let properties = [];
-      const areaBand = {'Dubai Marina':0,'JBR':1,'Business Bay':2};
+      const agentColors = ['#275d9a','#a65d2e','#794eb0','#b44064','#467583','#8b6520','#6354a5','#9b493d','#394f70'];
+      function agentColor(p) {
+        if (Number.isInteger(Number(p.agentId)) && Number(p.agentId) > 0) {
+          return agentColors[(Number(p.agentId) - 1) % agentColors.length];
+        }
+        const key = String(p.agentId || p.agent || 'unassigned');
+        let hash = 0;
+        for (const character of key) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+        return agentColors[hash % agentColors.length];
+      }
+      let mapPixels;
+      const placedMarkers = [];
+      function isLand(x,y) {
+        for(let dy=-36;dy<=8;dy+=4) for(let dx=-22;dx<=22;dx+=4){
+          const offset=(Math.round(y+dy)*1440+Math.round(x+dx))*4;
+          const [r,g,b]=mapPixels.data.slice(offset,offset+3);
+          if(b>r*1.12 && g>r*1.1 && b>150)return false;
+        }
+        return true;
+      }
       const mapLocation = (p) => {
-        const band = areaBand[p.area] ?? 0;
-        const n = Number(p.id) || 1;
-        // 5 columns x 4 rows per demo district keeps pins individually tappable.
-        const position = Math.floor((n-1)/3);
-        const col = position % 5, row = Math.floor(position / 5) % 4;
-        const layer = Math.floor(position / 20);
-        return {
-          x: [338,723,1094][band] + col*61 + ((n*7)%9) + layer*8,
-          y: 173 + row*181 + ((n*11)%15) + layer*8
-        };
+        let seed = (Number(p.id) || 1) * 7919;
+        const random = () => {seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+        for(let attempt=0;attempt<20000;attempt++){
+          const point={x:80+random()*1280,y:75+random()*640};
+          if(isLand(point.x,point.y)&&placedMarkers.every(other=>Math.hypot(other.x-point.x,other.y-point.y)>42)){
+            placedMarkers.push(point);return point;
+          }
+        }
+        throw Error('Unable to place a marker on land.');
       };
       const toMapProperty = (p,index) => {
         const {x,y} = mapLocation(p);
@@ -37,7 +55,7 @@
           actualType:p.type,purpose:p.purpose==='buy'?'sale':'rent',beds:p.bedrooms,
           baths:p.bathrooms,sqft:p.size_sqft,price:p.price_aed,x,y,
           description:p.description,amenities:Array.isArray(p.amenities)?p.amenities:[],
-          photo:p.photos?.[0]||'', agent:p.agent_name,agentPhone:p.agent_phone||'',
+          photo:p.photos?.[0]||'', agentId:p.agent_id,agent:p.agent_name,agentPhone:p.agent_phone||'',
           slug:p.slug,href:`/${p.purpose}/${p.area.toLowerCase().replaceAll(' ','-')}/${encodeURIComponent(p.slug)}`,
           variation:index%5};
       };
@@ -80,11 +98,43 @@
         for(let i=0;i<18;i++){const x=314+i*62;roads+=`<path d="M${x} 0 Q${x-45+rand()*80} 470 ${x+rand()*80-40} 960" fill="none" stroke="#fdfdf7" stroke-width="7" opacity=".78"/>`}
         $('#parks').innerHTML=park;$('#minorRoads').innerHTML=roads;
       }
-      function matching(p){return (state.type==='all'||state.type===p.type)&&(state.purpose==='all'||state.purpose===p.purpose)&&(!state.savedOnly||state.saved.has(p.id))&&(!state.search||`${p.title} ${p.area} ${p.ref} ${p.id} ${p.actualType} ${p.type} ${p.purpose}`.toLowerCase().includes(state.search));}
+      const headerFilters = {actualType:'',beds:'',maxPrice:''};
+      document.addEventListener('click',event=>{
+        const filter=event.target.closest('[data-filter]');
+        if(event.target.closest('#resetFilters')||filter?.dataset.filter==='all'){
+          headerFilters.actualType='';headerFilters.beds='';headerFilters.maxPrice='';
+        }else if(filter?.dataset.filter.startsWith('type:'))headerFilters.actualType='';
+        if(filter||event.target.closest('#resetFilters'))queueMicrotask(()=>{renderMatches();syncHeader();});
+      },true);
+      function matching(p){
+        const query=state.search.trim().toLowerCase();
+        const knownArea=['dubai marina','jbr','business bay'].includes(query);
+        const matchesSearch=!query||(knownArea?p.area.toLowerCase()===query:`${p.title} ${p.area} ${p.ref} ${p.actualType}`.toLowerCase().includes(query));
+        return matchesSearch&&(state.type==='all'||state.type===p.type)&&(state.purpose==='all'||state.purpose===p.purpose)&&(!state.savedOnly||state.saved.has(p.id))&&(!headerFilters.actualType||p.actualType===headerFilters.actualType)&&(headerFilters.beds===''||p.beds>=Number(headerFilters.beds))&&(headerFilters.maxPrice===''||p.price<=Number(headerFilters.maxPrice));
+      }
+      function syncHeader(){
+        if(window.parent!==window)window.parent.postMessage({kind:'map-filter-state',area:state.search,purpose:state.purpose,type:headerFilters.actualType,bedrooms:headerFilters.beds,maxPrice:headerFilters.maxPrice},location.origin);
+      }
+      window.addEventListener('message',event=>{
+        if(event.origin!==location.origin||event.source!==window.parent||event.data?.kind!=='map-filter')return;
+        const values=event.data.values;
+        state.type='all';state.purpose=values.purpose==='buy'?'sale':values.purpose==='rent'?'rent':'all';state.savedOnly=false;
+        headerFilters.actualType=values.type||'';headerFilters.beds=values.bedrooms||'';headerFilters.maxPrice=values.maxPrice||'';
+        setSearch(values.area||'');
+      });
       function getMatches(){return properties.filter(matching);}
       const filters=[['all','All places','all'],['purpose:sale','For sale','sale'],['purpose:rent','To rent','rent'],['type:flat','Apartments','flat'],['type:house','Houses','house'],['type:plot','Plots','plot']];
       function renderFilters(){const html=filters.map(([key,label])=>{const active=key==='all'?(state.type==='all'&&state.purpose==='all'&&!state.savedOnly):(key.startsWith('type:')?state.type===key.split(':')[1]:state.purpose===key.split(':')[1]);return `<button type="button" class="chip ${active?'active':''}" data-filter="${key}" aria-pressed="${active}">${safe(label)}</button>`;}).join('');$('#desktopFilters').innerHTML=html;$('#mobileFilters').innerHTML=html;$('#savedBtn').setAttribute('aria-pressed',String(state.savedOnly));$('#savedCounter').textContent=`Saved ${state.saved.size}${state.savedOnly?' · Showing':''}`;}
-      function buildPins(){layer.innerHTML=properties.map((p)=>`<button type="button" class="pin" style="left:${p.x}px;top:${p.y}px" data-id="${p.id}" aria-label="View ${safe(p.title)}, ${safe(p.area)}, ${safe(priceLabel(p))}"><span class="pin-body">${icon(p.type)}</span><span class="pin-label">${safe(priceLabel(p))}</span></button>`).join('');}
+      function buildPins(){
+        layer.innerHTML=properties.map((p)=>`<button type="button" class="pin" style="left:${p.x}px;top:${p.y}px;--agent-color:${agentColor(p)}" data-id="${p.id}" aria-label="View ${safe(p.title)}, ${safe(p.agent)}, ${safe(p.area)}, ${safe(priceLabel(p))}"><span class="pin-body">${icon(p.type)}</span><span class="pin-label">${safe(p.agent)} · ${safe(priceLabel(p))}</span></button>`).join('');
+        const agents = [...new Map(properties.map(p=>[p.agentId || p.agent,p])).values()];
+        const legend = document.createElement('details');
+        legend.className = 'agent-colors';
+        legend.open = true;
+        legend.innerHTML = `<summary>Marker colors by agent</summary><div>${agents.map(p=>`<span><i style="background:${agentColor(p)}"></i>${safe(p.agent || 'Unassigned')}</span>`).join('')}</div>`;
+        document.querySelector('.sidebar-footer').replaceChildren(legend);
+        legend.insertAdjacentHTML('beforebegin',`<div class="type-key">${[['plot','Plot'],['house','House'],['flat','Apartment']].map(([type,label])=>`<span>${icon(type)} ${label}</span>`).join('')}</div>`);
+      }
       function buildCard(p){return `<button type="button" class="listing-card ${state.selected===p.id?'active':''}" data-id="${safe(p.id)}" aria-label="Open ${safe(p.title)} details"><span class="card-art">${illustration(p)}</span><span class="listing-main"><span class="list-label">${p.purpose==='rent'?'FOR RENT':'FOR SALE'} · ${p.type==='flat'?'APARTMENT':p.type.toUpperCase()}</span><span class="list-title">${safe(p.title)}</span><span class="list-place">${safe(p.area)} · ${formatNumber(p.sqft)} sqft</span><span class="list-price">${priceLabel(p)}${p.purpose==='rent'?'<small> /year</small>':''}</span></span></button>`;}
       function renderMatches(){const list=getMatches(), ids=new Set(list.map(p=>p.id)); layer.querySelectorAll('.pin').forEach(el=>{el.classList.toggle('hidden',!ids.has(el.dataset.id));el.classList.toggle('active',el.dataset.id===state.selected);el.classList.toggle('saved',state.saved.has(el.dataset.id));});$('#visibleCount').textContent=String(list.length);$('#desktopCount').textContent=`${list.length} ${list.length===1?'place':'places'} available`;$('#listButtonCount').textContent=`View ${list.length} listings`;
         const html=list.length?list.map(buildCard).join(''):'<div class="empty-state"><strong>No properties found</strong>Try another area or clear the filters.</div>';
@@ -92,9 +142,9 @@
         if(state.selected&&!ids.has(state.selected))closeDetails();renderFilters();
       }
       function updateMap(animate=false){world.classList.toggle('animate',animate);world.style.transform=`translate(${state.x}px,${state.y}px) scale(${state.scale})`;}
-      function minimumScale(){return Math.max(viewport.clientWidth/1440,viewport.clientHeight/960)*.84;}
-      function fitMap(){const w=viewport.clientWidth,h=viewport.clientHeight;state.scale=Math.max(w/1440,h/960)*1.055;state.x=(w-1440*state.scale)/2;state.y=(h-960*state.scale)/2;updateMap(true);}
-      function constrain(){const w=viewport.clientWidth,h=viewport.clientHeight,cw=1440*state.scale,ch=960*state.scale,margin=100;state.x=Math.min(margin,Math.max(w-cw-margin,state.x));state.y=Math.min(margin,Math.max(h-ch-margin,state.y));}
+      function minimumScale(){return Math.max(viewport.clientWidth/1440,viewport.clientHeight/788)*.84;}
+      function fitMap(){const w=viewport.clientWidth,h=viewport.clientHeight;state.scale=Math.max(w/1440,h/788)*1.055;state.x=(w-1440*state.scale)/2;state.y=(h-788*state.scale)/2;updateMap(true);}
+      function constrain(){const w=viewport.clientWidth,h=viewport.clientHeight,cw=1440*state.scale,ch=788*state.scale,margin=100;state.x=Math.min(margin,Math.max(w-cw-margin,state.x));state.y=Math.min(margin,Math.max(h-ch-margin,state.y));}
       function zoomBy(factor,clientX,clientY){const rect=viewport.getBoundingClientRect(),cx=clientX===undefined?rect.width/2:clientX-rect.left,cy=clientY===undefined?rect.height/2:clientY-rect.top;let next=Math.min(2.6,Math.max(minimumScale(),state.scale*factor));const ratio=next/state.scale;state.x=cx-(cx-state.x)*ratio;state.y=cy-(cy-state.y)*ratio;state.scale=next;constrain();updateMap(true);}
       function panTo(p){const w=viewport.clientWidth,h=viewport.clientHeight,mobile=window.innerWidth<=720;const targetX=mobile?w*.49:w*.39,targetY=mobile?h*.37:h*.51;state.x=targetX-p.x*state.scale;state.y=targetY-p.y*state.scale;constrain();updateMap(true);}
       function showDetails(id){const p=properties.find(p=>p.id===id);if(!p)return;state.selected=p.id;$('#detailHero').querySelector(':scope > svg, :scope > img')?.remove();$('#detailHero').insertAdjacentHTML('afterbegin',p.photo?`<img src="${safe(p.photo)}" alt="${safe(p.title)}" loading="lazy" data-fallback="/assets/demo-residence-${String(p.variation+1).padStart(2,'0')}.svg">`:illustration(p));const type=p.type==='flat'?'Apartment':p.type==='house'?'House':'Land plot';$('#detailBody').innerHTML=`<span class="detail-badge">${p.purpose==='sale'?'For sale':'For rent'} · ${type}</span><h3>${safe(p.title)}</h3><div class="detail-place">${icon('pin')} ${safe(p.area)} · Dubai, UAE</div><div class="detail-price">${priceLabel(p)}${p.purpose==='rent'?'<small> / year</small>':''}</div><div class="detail-stats"><div class="detail-stat">${icon('area')}<strong>${formatNumber(p.sqft)}</strong><small>sqft</small></div><div class="detail-stat">${icon('bed')}<strong>${p.type==='plot'?'—':p.beds}</strong><small>bedrooms</small></div><div class="detail-stat">${icon('bath')}<strong>${p.type==='plot'?'—':p.baths}</strong><small>bathrooms</small></div></div><div class="detail-sectiontitle">About this place</div><p class="description">${safe(p.description)}</p><div class="amenities">${p.amenities.map(a=>`<span class="amenity">${safe(a)}</span>`).join('')}</div><div class="agent-mini"><b>YOUR PROPERTY ADVISER</b><span>${safe(p.agent||'Marina Gate adviser')}</span></div><a class="detail-open" href="${safe(p.href)}" target="_top" rel="noopener">View full listing <span>↗</span></a><div class="detail-ref">REFERENCE ${safe(p.ref)} · Illustrative demo data</div>`;
@@ -103,7 +153,7 @@
       function toggleSave(){const id=state.selected;if(!id)return;if(state.saved.has(id))state.saved.delete(id);else state.saved.add(id);persistSaved();renderMatches();$('#detailSaveBtn').setAttribute('aria-pressed',String(state.saved.has(id)));$('#detailSaveBtn').setAttribute('aria-label',state.saved.has(id)?'Remove saved property':'Save property');toast(state.saved.has(id)?'Added to your saved places':'Removed from saved places');}
       let toastTimer;function toast(message){clearTimeout(toastTimer);$('#toast').textContent=message;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2800);}
       function applyFilter(key){if(key==='all'){state.type='all';state.purpose='all';state.savedOnly=false;}else{const [kind,value]=key.split(':');if(kind==='type'){state.type=state.type===value?'all':value;}else{state.purpose=state.purpose===value?'all':value;}state.savedOnly=false;}renderMatches();}
-      function setSearch(value){state.search=value.toLowerCase().trim();if($('#searchInput').value!==value)$('#searchInput').value=value;if($('#mobileSearch').value!==value)$('#mobileSearch').value=value;renderMatches();}
+      function setSearch(value){state.search=value.toLowerCase().trim();if($('#searchInput').value!==value)$('#searchInput').value=value;if($('#mobileSearch').value!==value)$('#mobileSearch').value=value;renderMatches();syncHeader();}
       function openModal(kind){
         const p=properties.find(x=>x.id===state.selected);
         if(kind==='contact'&&!p)return;
@@ -116,7 +166,10 @@
       for(const id of ['desktopResults','mobileResults'])$("#"+id).addEventListener('click',(e)=>{const card=e.target.closest('.listing-card');if(card)showDetails(card.dataset.id);});
       document.addEventListener('click',e=>{const f=e.target.closest('[data-filter]');if(f)applyFilter(f.dataset.filter);});
       $('#searchInput').addEventListener('input',e=>setSearch(e.target.value));$('#mobileSearch').addEventListener('input',e=>setSearch(e.target.value));$('#resetFilters').addEventListener('click',()=>{state.type='all';state.purpose='all';state.savedOnly=false;setSearch('');renderMatches();});$('#savedBtn').addEventListener('click',()=>{state.savedOnly=!state.savedOnly;renderMatches();if(state.savedOnly&&state.saved.size===0)toast('Click a property, then its heart to save it');});
-      $('#closeDetails').addEventListener('click',closeDetails);$('#detailSaveBtn').addEventListener('click',toggleSave);$('#requestBtn').addEventListener('click',()=>openModal('contact'));$('#aboutBtn').addEventListener('click',()=>openModal('about'));
+      $('#closeDetails').addEventListener('click',closeDetails);$('#detailSaveBtn').addEventListener('click',toggleSave);$('#requestBtn').addEventListener('click',()=>{
+        const property = properties.find(p=>p.id===state.selected);
+        if (property) window.top.location.href = property.href;
+      });$('#aboutBtn').addEventListener('click',()=>openModal('about'));
       $('#modalClose').addEventListener('click',closeModal);$('#modalBackdrop').addEventListener('click',(e)=>{if(e.target.id==='modalBackdrop')closeModal();});$('#modalContent').addEventListener('click',e=>{if(e.target.id==='gotIt')closeModal();});
       $('#modalContent').addEventListener('submit',async e=>{
         if(e.target.id!=='requestForm')return;
@@ -143,9 +196,15 @@
       viewport.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-'].includes(e.key)){e.preventDefault();if(e.key==='+')zoomBy(1.15);else if(e.key==='-')zoomBy(1/1.15);else{world.classList.add('animate');state.x+=e.key==='ArrowLeft'?55:e.key==='ArrowRight'?-55:0;state.y+=e.key==='ArrowUp'?55:e.key==='ArrowDown'?-55:0;constrain();updateMap(true);}}});
       document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modalBackdrop').classList.contains('open'))closeModal();else if($('#details').classList.contains('open'))closeDetails();else {$('#mobileListPanel').classList.remove('open');$('#mobileListPanel').setAttribute('aria-hidden','true');}}});
       let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(fitMap,130);});
-      seedMapDecoration();
+      $('#landmap').remove();
       const loadMapListings=async()=>{
         try{
+          const background=new Image();background.className='supplied-map';background.alt='Dubai map supplied by the user';background.draggable=false;background.src='/assets/dubai-map-v2.png';
+          await background.decode();
+          world.prepend(background);
+          const canvas=document.createElement('canvas');canvas.width=1440;canvas.height=788;
+          const context=canvas.getContext('2d',{willReadFrequently:true});context.drawImage(background,0,0,1440,788);
+          mapPixels=context.getImageData(0,0,1440,788);
           const response=await fetch('/api/map/listings',{credentials:'same-origin'});
           if(!response.ok)throw Error('Unable to load agency listings');
           const data=await response.json();
@@ -166,3 +225,4 @@
       loadMapListings();
     })();
   
+
